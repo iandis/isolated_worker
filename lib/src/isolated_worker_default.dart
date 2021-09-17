@@ -2,6 +2,8 @@ import 'dart:async' show Completer, FutureOr, StreamSubscription;
 import 'dart:collection' show LinkedHashMap;
 import 'dart:isolate' show Isolate, ReceivePort, SendPort;
 
+import 'isolated_worker.dart';
+
 const int _kMaxCallbackMessageId = 1000;
 
 abstract class _CallbackObject {
@@ -77,20 +79,16 @@ class _ResultErrorMessage implements _CallbackObject {
   final Object error;
 }
 
-/// An isolated worker spawn on a single [Isolate].
-/// 
-/// When running on web this will spawn a single [Worker] instead.
-class IsolatedWorker {
-  /// Returns a singleton instance of [IsolatedWorker]
-  factory IsolatedWorker() => _instance;
+class IsolatedWorkerImpl implements IsolatedWorker {
+  factory IsolatedWorkerImpl() => _instance;
 
-  /// it's important to call [IsolatedWorker._init] first
-  /// before running any operations using [IsolatedWorker.run]
-  IsolatedWorker._() {
+  /// it's important to call [IsolatedWorkerImpl._init] first
+  /// before running any operations using [IsolatedWorkerImpl.run]
+  IsolatedWorkerImpl._() {
     _init();
   }
 
-  static final IsolatedWorker _instance = IsolatedWorker._();
+  static final IsolatedWorkerImpl _instance = IsolatedWorkerImpl._();
 
   /// this is used to listen messages sent by [_Worker]
   ///
@@ -120,7 +118,7 @@ class IsolatedWorker {
   /// this is used to send messages to [_Worker]
   late final StreamSubscription<dynamic> _workerMessages;
 
-  /// used by [IsolatedWorker] to send messages to [_Worker]
+  /// used by [IsolatedWorkerImpl] to send messages to [_Worker]
   Future<SendPort> get _workerSendPort => _workerSendPortCompleter.future;
 
   /// current count for next [_CallbackMessage] id
@@ -141,7 +139,7 @@ class IsolatedWorker {
     }
   }
 
-  /// Just like using Flutter's [compute] function
+  @override
   Future<R> run<Q, R>(
     FutureOr<R> Function(Q message) callback,
     Q message,
@@ -172,7 +170,7 @@ class IsolatedWorker {
     }
   }
 
-  /// Don't try to [close] when the app is still running
+  @override
   void close() {
     /// tell [_Worker] to call _dispose()
     _workerSendPort.then((sendPort) => sendPort.send(false));
@@ -189,12 +187,12 @@ void _workerEntryPoint(final SendPort parentSendPort) {
 class _Worker {
   _Worker(this.parentSendPort);
 
-  /// this is used to listen messages sent by [IsolatedWorker]
+  /// this is used to listen messages sent by [IsolatedWorkerImpl]
   ///
-  /// its [SendPort] is used by [IsolatedWorker] to send messages
+  /// its [SendPort] is used by [IsolatedWorkerImpl] to send messages
   final ReceivePort _receivePort = ReceivePort();
 
-  /// this is used to send messages back to [IsolatedWorker]
+  /// this is used to send messages back to [IsolatedWorkerImpl]
   final SendPort parentSendPort;
 
   late final StreamSubscription<dynamic> _parentMessages;
