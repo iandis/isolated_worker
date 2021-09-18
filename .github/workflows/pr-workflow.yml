@@ -1,0 +1,68 @@
+name: PR workflow on master branch
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  analyze_formatting:
+    name: Analyze PR using Dart latest version
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Analyze package warnings
+        run: dart pub publish --dry-run
+
+  run_isolated_worker_test:
+    name: Run test on `IsolatedWorker`
+    needs: [analyze_formatting]
+    runs-on: ubuntu-latesst
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Run test on VM
+        run: dart test test/isolated_worker_test.dart
+
+  run_js_isolated_worker_test:
+    name: Run test on `JsIsolatedWorker`
+    needs: [run_isolated_worker_test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v0.0.0
+      
+      - name: Run test on Chrome
+        run: dart test test/web --platform chrome
+  
+  analyze_with_pana:
+    name: Analyze PR using Pana latest version
+    needs: [run_js_isolated_worker_test]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      
+      - name: Install dependencies
+        run: dart pub get
+      
+      - name: Install Pana
+        run: dart pub global activate pana
+      
+      - name: Run pana
+        run: $HOME/.pub-cache/bin/pana .
