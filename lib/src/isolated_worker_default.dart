@@ -2,8 +2,6 @@ import 'dart:async' show Completer, FutureOr, StreamSubscription;
 import 'dart:collection' show LinkedHashMap;
 import 'dart:isolate' show Isolate, ReceivePort, SendPort;
 
-import 'isolated_worker.dart';
-
 const int _kMaxCallbackMessageId = 1000;
 
 abstract class _CallbackObject {
@@ -79,16 +77,18 @@ class _ResultErrorMessage implements _CallbackObject {
   final Object error;
 }
 
-class IsolatedWorkerImpl implements IsolatedWorker {
-  factory IsolatedWorkerImpl() => _instance;
+/// An isolated worker spawning a single [Isolate].
+class IsolatedWorker {
+  /// Returns a singleton instance of [IsolatedWorker]
+  factory IsolatedWorker() => _instance;
 
-  /// it's important to call [IsolatedWorkerImpl._init] first
-  /// before running any operations using [IsolatedWorkerImpl.run]
-  IsolatedWorkerImpl._() {
+  /// it's important to call [IsolatedWorker._init] first
+  /// before running any operations using [IsolatedWorker.run]
+  IsolatedWorker._() {
     _init();
   }
 
-  static final IsolatedWorkerImpl _instance = IsolatedWorkerImpl._();
+  static final IsolatedWorker _instance = IsolatedWorker._();
 
   /// this is used to listen messages sent by [_Worker]
   ///
@@ -102,7 +102,7 @@ class IsolatedWorkerImpl implements IsolatedWorker {
   /// this should've been [LinkedHashMap] with type arguments of:
   /// - `FutureOr<R> Function(Q)`
   /// - `Completer<R>`
-  /// 
+  ///
   /// But we can't due to analyzer's restriction on [dynamic] type arguments
   final LinkedHashMap<_CallbackObject, dynamic> _callbackObjects = LinkedHashMap<_CallbackObject, dynamic>(
     equals: (_CallbackObject a, _CallbackObject b) {
@@ -118,7 +118,7 @@ class IsolatedWorkerImpl implements IsolatedWorker {
   /// this is used to send messages to [_Worker]
   late final StreamSubscription<dynamic> _workerMessages;
 
-  /// used by [IsolatedWorkerImpl] to send messages to [_Worker]
+  /// used by [IsolatedWorker] to send messages to [_Worker]
   Future<SendPort> get _workerSendPort => _workerSendPortCompleter.future;
 
   /// current count for next [_CallbackMessage] id
@@ -139,7 +139,7 @@ class IsolatedWorkerImpl implements IsolatedWorker {
     }
   }
 
-  @override
+  /// Just like using Flutter's [compute] function
   Future<R> run<Q, R>(
     FutureOr<R> Function(Q message) callback,
     Q message,
@@ -170,7 +170,7 @@ class IsolatedWorkerImpl implements IsolatedWorker {
     }
   }
 
-  @override
+  /// Don't try to [close] when the app still needs the [run] function
   void close() {
     /// tell [_Worker] to call _dispose()
     _workerSendPort.then((sendPort) => sendPort.send(false));
@@ -187,12 +187,12 @@ void _workerEntryPoint(final SendPort parentSendPort) {
 class _Worker {
   _Worker(this.parentSendPort);
 
-  /// this is used to listen messages sent by [IsolatedWorkerImpl]
+  /// this is used to listen messages sent by [IsolatedWorker]
   ///
-  /// its [SendPort] is used by [IsolatedWorkerImpl] to send messages
+  /// its [SendPort] is used by [IsolatedWorker] to send messages
   final ReceivePort _receivePort = ReceivePort();
 
-  /// this is used to send messages back to [IsolatedWorkerImpl]
+  /// this is used to send messages back to [IsolatedWorker]
   final SendPort parentSendPort;
 
   late final StreamSubscription<dynamic> _parentMessages;
