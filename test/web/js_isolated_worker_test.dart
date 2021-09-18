@@ -45,22 +45,23 @@ void main() {
       );
     });
 
-    const String targetUrl = "https://jsonplaceholder.typicode.com/posts/1/comments";
+    const String targetUrl =
+        "https://jsonplaceholder.typicode.com/posts/1/comments";
+
     test(
         'Verify user-defined JS function [get] returns JSArray\n'
         'when fetching $targetUrl\n'
         'while running on [JsIsolatedWorker]', () async {
       await JsIsolatedWorker().importScripts(['user_defined_js_fn.js']);
       expectLater(
-        JsIsolatedWorker().run(
-          functionName: 'get',
-          arguments: targetUrl,
-        ).then((dynamic responseData) {
-          expect(responseData, isA<List>());
-          expect(responseData.length, equals(5));
-          expect(responseData[0], isA<LinkedHashMap>());
-          expect(responseData[0]['email'], equals('Eliseo@gardner.biz'));
-        }),
+        JsIsolatedWorker().run(functionName: 'get', arguments: targetUrl).then(
+          (dynamic responseData) {
+            expect(responseData, isA<List>());
+            expect(responseData.length, equals(5));
+            expect(responseData[0], isA<LinkedHashMap>());
+            expect(responseData[0]['email'], equals('Eliseo@gardner.biz'));
+          },
+        ),
         completes,
       );
     });
