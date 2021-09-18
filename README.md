@@ -1,39 +1,79 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A singleton isolated worker for all platforms. On most platforms, it uses Flutter's `Isolate`, except on the web, since `Isolate` is not available, it uses `Worker` instead.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+*   💙  Easy to use*
+*   👬  Identical syntax to the `compute` function provided by Flutter*
+*   🚫  Not a one-off worker
+*   🌐  Available on web**
 
-## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+*except on web
+**by using `JsIsolatedWorker`
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
+### Basic example
 ```dart
-const like = 'sample';
+int doSomeHeavyCalculation(int count) {
+    // ...
+}
+void main() {
+    // if using compute function:
+    // compute(doSomeHeavyCalculation, 1000);
+    IsolatedWorker().run(doSomeHeavyCalculation, 1000);
+}
+``` 
+If we want to do some heavy work that does not need any arguments and/or return values.
+```dart
+// WRONG
+void doSomethingHeavy() {
+    // ...
+}
+
+// CORRECT
+void doSomethingHeavy(void _) {
+    // ...
+}
+
+void main() {
+    IsolatedWorker().run(doSomethingHeavy, null);
+}
+
 ```
 
-## Additional information
+### Web example
+We can utilize the `JsIsolatedWorker` for spawning a web worker. However, it cannot use Dart closures as messages to the worker because of some limitations (I have tried using `JSONfn` and `allowInterop` but no luck).
+Instead we need to use native JS closures. In order to do this, we can utilize existing JS APIs or by importing external libraries/files.
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+Let's assume we want to stringify objects to `String` using `JSON.stringify`.
+```dart
+void main() {
+    JsIsolatedWorker().run(
+        functionName: ['JSON', 'stringify'],
+        arguments: {},
+        // optional argument, in case web worker is not available.
+        fallback: () {
+            return '{}';
+        },
+    ).then(print);
+    // prints "{}"
+}
+```
+Now let's assume we have external js libraries/files that we want the worker to use.
+```dart
+void main() async {
+    // import the scripts first
+    // and check if web worker is available
+    final bool loaded = await JsIsolatedWorker().importScripts(['myModule1.js']);
+    // web worker is available
+    if(loaded) {
+        print(await JsIsolatedWorker().run(
+            functionName: 'myFunction1',
+            arguments: 'Hello from Dart :)',
+        ));
+    }else{
+        print('Web worker is not available :(');
+    }
+}
+```

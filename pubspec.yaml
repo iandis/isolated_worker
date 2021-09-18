@@ -1,14 +1,11 @@
 name: isolated_worker
-description: An isolated worker for Flutter (Isolate) and Web (Web Worker). Behaves almost the same as the compute function, except it is not a one-off worker. 
+description: A singleton isolated worker for Flutter (Isolate) and Web (Web Worker).
 version: 0.0.1
 repository: https://www.github.com/iandis/isolated_worker
 issue_tracker: https://www.github.com/iandis/isolated_worker/issues
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
-
-dependencies:
-  js: ^0.6.3
 
 dev_dependencies:
   lint: ^1.6.0
