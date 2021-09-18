@@ -5,14 +5,14 @@ import 'dart:html';
 const int _kMaxCallbackMessageId = 1000;
 
 /// An isolated worker spawning a single [Worker]
-/// 
+///
 /// It's better to run [importScripts] first before going
 /// to use any javascript functions in the worker.
-/// 
+///
 /// However it is not mandatory to do so if no javascript files
 /// are needed by the worker, e.g. the `JSON.stringify` function.
-/// 
-/// It will be mandatory to do so if there are external javascript 
+///
+/// It will be mandatory to do so if there are external javascript
 /// files needed by the worker.
 class JsIsolatedWorker {
   /// Returns a singleton instance of [JsIsolatedWorker]
@@ -32,7 +32,8 @@ class JsIsolatedWorker {
   /// - [0] is `id`
   /// - [1] is `functionName`
   /// - [2] is `arguments`
-  final LinkedHashMap<List<dynamic>, dynamic> _callbackObjects = LinkedHashMap<List<dynamic>, dynamic>(
+  final LinkedHashMap<List<dynamic>, dynamic> _callbackObjects =
+      LinkedHashMap<List<dynamic>, dynamic>(
     equals: (List<dynamic> a, List<dynamic> b) {
       return a[0] == b[0];
     },
@@ -76,7 +77,8 @@ class JsIsolatedWorker {
     /// [3] => value
     final List<dynamic> messageData = message.data as List<dynamic>;
 
-    final Completer<dynamic> callbackCompleter = _callbackObjects.remove(messageData) as Completer<dynamic>;
+    final Completer<dynamic> callbackCompleter =
+        _callbackObjects.remove(messageData) as Completer<dynamic>;
     final String type = messageData[2] as String;
     final dynamic resultOrError = messageData[3];
     if (type == 'result') {
@@ -87,12 +89,12 @@ class JsIsolatedWorker {
   }
 
   /// It's important to wait for [importScripts] to complete
-  /// 
+  ///
   /// If this returns `false` then it is discouraged to use the [run] function,
   /// because it cannot do anything other than calling its fallback parameter.
-  /// 
+  ///
   /// [scripts] cannot be empty.
-  /// 
+  ///
   /// example:
   /// ```dart
   /// void main() async {
@@ -135,7 +137,7 @@ class JsIsolatedWorker {
   /// [arguments] the arguments that will be applied to the callback defined by [functionName]
   ///
   /// ```js
-  /// // if we need to call the JSON.stringify function: 
+  /// // if we need to call the JSON.stringify function:
   /// // functionName = ['JSON','stringify'];
   /// const callback = self[functionName];
   /// const result = callback(arguments);

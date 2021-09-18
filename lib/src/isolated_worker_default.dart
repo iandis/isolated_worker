@@ -104,7 +104,8 @@ class IsolatedWorker {
   /// - `Completer<R>`
   ///
   /// But we can't due to analyzer's restriction on [dynamic] type arguments
-  final LinkedHashMap<_CallbackObject, dynamic> _callbackObjects = LinkedHashMap<_CallbackObject, dynamic>(
+  final LinkedHashMap<_CallbackObject, dynamic> _callbackObjects =
+      LinkedHashMap<_CallbackObject, dynamic>(
     equals: (_CallbackObject a, _CallbackObject b) {
       return a.id == b.id && a.callback == b.callback;
     },
@@ -160,7 +161,8 @@ class IsolatedWorker {
     if (message is SendPort) {
       _workerSendPortCompleter.complete(message);
     } else if (message is _CallbackObject) {
-      final Completer<dynamic> callbackCompleter = _callbackObjects.remove(message) as Completer<dynamic>;
+      final Completer<dynamic> callbackCompleter =
+          _callbackObjects.remove(message) as Completer<dynamic>;
 
       if (message is _ResultMessage) {
         callbackCompleter.complete(message.result);
@@ -215,7 +217,8 @@ class _Worker {
     final _CallbackMessage parentMessage,
   ) async {
     try {
-      final dynamic result = await parentMessage.callback(parentMessage.message);
+      final dynamic result =
+          await parentMessage.callback(parentMessage.message);
 
       final _ResultMessage resultMessage = _ResultMessage.from(
         parentMessage,

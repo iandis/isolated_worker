@@ -6,7 +6,6 @@ List<int> isolatedWork(int number) {
 }
 
 void main() {
-  
   group('Test [IsolatedWorker]\n', () {
     tearDownAll(() {
       IsolatedWorker().close();
@@ -32,7 +31,8 @@ void main() {
 
     test(
         'Verify 2 [isolatedWork]s running with [IsolatedWorker]\n'
-        'returns 2 Lists of integers containing the expected numbers', () async {
+        'returns 2 Lists of integers containing the expected numbers',
+        () async {
       final Future<List<int>> result1 = IsolatedWorker().run(isolatedWork, 10);
       final Future<List<int>> result2 = IsolatedWorker().run(isolatedWork, 15);
       result1.then((value) {
@@ -56,7 +56,8 @@ void main() {
 
     test(
         'Verify 4 [isolatedWork]s running with [IsolatedWorker]\n'
-        'returns 4 Lists of integers containing the expected numbers', () async {
+        'returns 4 Lists of integers containing the expected numbers',
+        () async {
       final Future<List<int>> result1 = IsolatedWorker().run(isolatedWork, 10);
       final Future<List<int>> result2 = IsolatedWorker().run(isolatedWork, 15);
       final Future<List<int>> result3 = IsolatedWorker().run(isolatedWork, 20);
