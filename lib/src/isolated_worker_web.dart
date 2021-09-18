@@ -1,33 +1,43 @@
-import 'dart:async' show Completer, FutureOr, StreamSubscription;
+import 'dart:async' show Completer, StreamSubscription;
 import 'dart:collection' show LinkedHashMap;
 import 'dart:html';
-import 'dart:js';
-
-import 'isolated_worker.dart';
-import 'isolated_worker_web_jsobjects.dart';
 
 const int _kMaxCallbackMessageId = 1000;
 
-class IsolatedWorkerImpl implements IsolatedWorker {
-  factory IsolatedWorkerImpl() => _instance;
+/// An isolated worker spawning a single [Worker]
+/// 
+/// It's better to run [importScripts] first before going
+/// to use any javascript functions in the worker.
+/// 
+/// However it is not mandatory to do so if no javascript files
+/// are needed by the worker, e.g. the `JSON.stringify` function.
+/// 
+/// It will be mandatory to do so if there are external javascript 
+/// files needed by the worker.
+class JsIsolatedWorker {
+  /// Returns a singleton instance of [JsIsolatedWorker]
+  factory JsIsolatedWorker() => _instance;
 
-  IsolatedWorkerImpl._() {
+  JsIsolatedWorker._() {
     _init();
   }
 
-  static final IsolatedWorkerImpl _instance = IsolatedWorkerImpl._();
+  static final JsIsolatedWorker _instance = JsIsolatedWorker._();
 
-  /// this should've been [LinkedHashMap] with type arguments of:
+  /// This should've been [LinkedHashMap] with type arguments of:
   /// - `FutureOr<R> Function(Q)`
   /// - `Completer<R>`
   ///
-  /// But we can't due to analyzer's restriction on [dynamic] type arguments
-  final LinkedHashMap<CallbackObject, dynamic> _callbackObjects = LinkedHashMap<CallbackObject, dynamic>(
-    equals: (CallbackObject a, CallbackObject b) {
-      return a.id == b.id && a.callback == b.callback;
+  /// It is now a [List] consists of:
+  /// - [0] is `id`
+  /// - [1] is `functionName`
+  /// - [2] is `arguments`
+  final LinkedHashMap<List<dynamic>, dynamic> _callbackObjects = LinkedHashMap<List<dynamic>, dynamic>(
+    equals: (List<dynamic> a, List<dynamic> b) {
+      return a[0] == b[0];
     },
-    hashCode: (CallbackObject callbackObject) {
-      return callbackObject.id.hashCode ^ callbackObject.callback.hashCode;
+    hashCode: (List<dynamic> callbackObject) {
+      return callbackObject[0].hashCode;
     },
   );
 
@@ -38,14 +48,13 @@ class IsolatedWorkerImpl implements IsolatedWorker {
   // ignore: cancel_subscriptions, use_late_for_private_fields_and_variables
   StreamSubscription<MessageEvent>? _workerMessages;
 
-  /// current count for next [CallbackMessage] id
+  /// current count for next id
   int _callbackMessageId = 0;
 
   void _init() {
     if (Worker.supported) {
-      document.body!.appendHtml('<script src="isolated_worker.js" type="application/javascript"></script>');
-      document.body!.appendHtml('<script src="worker.js" type="application/javascript"></script>');
       final Worker worker = Worker('worker.js');
+
       _workerCompleter.complete(worker);
       _workerMessages = worker.onMessage.listen(_workerMessageReceiver);
     } else {
@@ -61,42 +70,102 @@ class IsolatedWorkerImpl implements IsolatedWorker {
   }
 
   void _workerMessageReceiver(MessageEvent message) {
-    final dynamic messageData = message.data;
+    /// [0] => id
+    /// [1] => functionName
+    /// [2] => return type ("result" or "error")
+    /// [3] => value
+    final List<dynamic> messageData = message.data as List<dynamic>;
 
-    if (messageData is CallbackObject) {
-      final Completer<dynamic> callbackCompleter = _callbackObjects.remove(messageData) as Completer<dynamic>;
-
-      if (messageData is ResultMessage) {
-        callbackCompleter.complete(messageData.result);
-      } else if (messageData is ResultErrorMessage) {
-        callbackCompleter.completeError(messageData.error);
-      }
+    final Completer<dynamic> callbackCompleter = _callbackObjects.remove(messageData) as Completer<dynamic>;
+    final String type = messageData[2] as String;
+    final dynamic resultOrError = messageData[3];
+    if (type == 'result') {
+      callbackCompleter.complete(resultOrError);
+    } else if (type == 'error') {
+      callbackCompleter.completeError(resultOrError as Object);
     }
   }
 
-  @override
-  Future<R> run<Q, R>(
-    FutureOr<R> Function(Q message) callback,
-    Q message,
-  ) async {
+  /// It's important to wait for [importScripts] to complete
+  /// 
+  /// If this returns `false` then it is discouraged to use the [run] function,
+  /// because it cannot do anything other than calling its fallback parameter.
+  /// 
+  /// [scripts] cannot be empty.
+  /// 
+  /// example:
+  /// ```dart
+  /// void main() async {
+  ///   final bool loaded = await JsIsolatedWorker().importScripts(
+  ///     ['my_module1.js', 'my_module2.js']
+  ///   );
+  ///   if(loaded) {
+  ///     print(await JsIsolatedWorker().run(
+  ///       functionName: 'myFunction1',
+  ///       arguments: 100,
+  ///     ));
+  ///   }
+  /// }
+  /// ```
+  Future<bool> importScripts(List<String> scripts) async {
+    assert(scripts.isNotEmpty);
+
+    final Worker? worker = await _worker;
+    if (worker != null) {
+      worker.postMessage(['\$init_scripts', ...scripts]);
+      return true;
+    }
+    return false;
+  }
+
+  /// [functionName] can be a [String] or a [List] of [String]
+  ///
+  /// this will be called by the worker like below:
+  ///
+  /// ```js
+  /// const callback = self[functionName];
+  /// // or
+  /// const length = functionName.length;
+  /// let callback = self[functionName[0]];
+  /// for (let i = 1; i < length; i++) {
+  ///   callback = callback[functionName[i]];
+  /// }
+  /// ```
+  ///
+  /// [arguments] the arguments that will be applied to the callback defined by [functionName]
+  ///
+  /// ```js
+  /// // if we need to call the JSON.stringify function: 
+  /// // functionName = ['JSON','stringify'];
+  /// const callback = self[functionName];
+  /// const result = callback(arguments);
+  /// ```
+  Future<dynamic> run({
+    required dynamic functionName,
+    required dynamic arguments,
+    Future<dynamic> Function()? fallback,
+  }) async {
+    assert(functionName != null);
+
     final Worker? worker = await _worker;
     // worker not available
     if (worker == null) {
-      return callback(message);
+      return fallback?.call();
     }
     _resetCurrentCallbackMessageIdIfReachedMax();
-    final Completer<R> callbackCompleter = Completer<R>();
-    final CallbackMessage callbackMessage = CallbackMessage()
-      ..id = _callbackMessageId++
-      ..callback = allowInterop(callback)
-      ..message = message;
-      
+    final Completer<dynamic> callbackCompleter = Completer<dynamic>();
+    final List<dynamic> callbackMessage = <dynamic>[
+      _callbackMessageId++,
+      functionName,
+      arguments,
+    ];
+
     _callbackObjects[callbackMessage] = callbackCompleter;
     worker.postMessage(callbackMessage);
     return callbackCompleter.future;
   }
 
-  @override
+  /// Don't attempt to [close] when the app still needs the [run] function.
   Future<void> close() async {
     final Worker? worker = await _worker;
     if (worker != null) {
