@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show FutureOr;
 
 import 'isolated_worker_default.dart';
 

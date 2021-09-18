@@ -1,10 +1,9 @@
 import 'dart:async' show FutureOr;
-import 'dart:isolate' show Isolate;
 
 import 'isolated_worker_default_impl.dart'
     if (dart.library.html) 'isolated_worker_default_unimpl.dart';
 
-/// An isolated worker spawning a single [Isolate].
+/// An isolated worker spawning a single Isolate.
 abstract class IsolatedWorker {
   /// Returns a singleton instance of [IsolatedWorker]
   factory IsolatedWorker() = IsolatedWorkerImpl;
