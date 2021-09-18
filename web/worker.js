@@ -1,11 +1,1 @@
-onmessage = async function (e) {
-    const data = e.data;
-    try {
-        const result = await data.callback(data.message);
-        const resultMessage = new ResultMessage(data.id, data.callback, result);
-        postMessage(resultMessage);
-    } catch (error) {
-        const resultErrorMessage = new ResultErrorMessage(data.id, data.callback, error);
-        postMessage(resultErrorMessage);
-    }
-}
+self.onmessage=t=>{var a,s;void 0!==t.data[0]&&"$init_scripts"===t.data[0]?(s=t.data.slice(1),_initScripts(s)):(a=t.data[0],s=t.data[1],t=t.data[2],_doFunction(a,s,t))};const _initScripts=t=>{importScripts(...t)},_doFunction=async(s,e,t)=>{try{let a;if("string"==typeof e)a=self[e];else{var i=e.length;a=self[e[0]];for(let t=1;t<i;t++)a=a[e[t]]}var r=await a(t);postMessage([s,e,"result",r])}catch(t){postMessage([s,e,"error",t])}};
