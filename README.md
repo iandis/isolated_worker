@@ -77,3 +77,13 @@ void main() async {
     }
 }
 ```
+
+## Web Worker Setup
+In order for `JsIsolatedWorker` to run properly on Flutter web, there needs to be a single `worker.js` file in the `web` folder. You can download it [here](https://github.com/iandis/isolated_worker/blob/master/web/worker.js) and put it in your `web` folder like below
+```
+...
+web /
+    index.html
+    worker.js
+    ...
+```
