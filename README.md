@@ -46,7 +46,7 @@ void main() {
 We can utilize the `JsIsolatedWorker` for spawning a web worker. However, it cannot use Dart closures as messages to the worker because of some limitations (I have tried using `JSONfn` and `allowInterop` but no luck).
 Instead we need to use native JS closures. In order to do this, we can utilize existing JS APIs or by importing external libraries/files.
 
-Let's assume we want to stringify objects to `String` using `JSON.stringify`.
+Let's assume we want to stringify objects using `JSON.stringify`.
 ```dart
 void main() {
     JsIsolatedWorker().run(
@@ -87,3 +87,6 @@ web /
     worker.js
     ...
 ```
+
+## Examples
+*   [Fetch](https://github.com/iandis/flutter_isolated_worker_fetch_example) - an example of how to get response from a URL using `IsolatedWorker` and `JsIsolatedWorker`
