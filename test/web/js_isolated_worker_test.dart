@@ -1,14 +1,14 @@
 import 'dart:collection';
 
 import 'package:isolated_worker/js_isolated_worker.dart';
+import 'package:isolated_worker/worker_delegator.dart';
 import 'package:test/test.dart';
 
 void main() {
+  tearDownAll(() {
+    JsIsolatedWorker().close();
+  });
   group('Test [JsIsolatedWorker]\n', () {
-    tearDownAll(() {
-      JsIsolatedWorker().close();
-    });
-
     test(
         'Verify [JSON.stringify] returns "{}"\n'
         'when running on [JsIsolatedWorker]', () {
@@ -62,6 +62,41 @@ void main() {
             expect(responseData[0]['email'], equals('Eliseo@gardner.biz'));
           },
         ),
+        completes,
+      );
+    });
+  });
+
+  group('Test [WorkerDelegator] on Web\n', () {
+    setUpAll(() {
+      const JsDelegate dummyJsDelegate = JsDelegate(
+        callback: ['JSON', 'stringify'],
+      );
+
+      final DefaultDelegate<String, Object> dummyDefDelegate = DefaultDelegate(
+        callback: (String a) => '',
+      );
+
+      final WorkerDelegate dummyWorkerDelegate = WorkerDelegate(
+        key: 'dummyJsonStringify',
+        defaultDelegate: dummyDefDelegate,
+        jsDelegate: dummyJsDelegate,
+      );
+
+      WorkerDelegator().addDelegate(dummyWorkerDelegate);
+    });
+
+    test(
+        'Verify [JSON.stringify] returns "{}"\n'
+        'when running on [WorkerDelegator]', () {
+      expectLater(
+        WorkerDelegator().run(
+          'dummyJsonStringify',
+          {},
+        ).then((dynamic jsonString) {
+          expect(jsonString, isA<String>());
+          expect(jsonString, equals('{}'));
+        }),
         completes,
       );
     });
