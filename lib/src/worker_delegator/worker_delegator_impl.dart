@@ -1,17 +1,15 @@
 part of 'worker_delegator.dart';
 
 class _WorkerDelegatorImpl implements WorkerDelegator {
-  const _WorkerDelegatorImpl({
-    required Map<Object, WorkerDelegate> delegates,
-  }) : _delegates = delegates;
+  _WorkerDelegatorImpl({
+    Iterable<WorkerDelegate> delegates = const Iterable<WorkerDelegate>.empty(),
+  }) {
+    addAllDelegates(delegates);
+  }
 
-  // We don't want the [_delegates] to be unmodifiable.
-  // ignore: prefer_const_constructors
-  static final _WorkerDelegatorImpl _instance = _WorkerDelegatorImpl(
-    delegates: <Object, WorkerDelegate>{},
-  );
+  static final _WorkerDelegatorImpl _instance = _WorkerDelegatorImpl();
 
-  final Map<Object, WorkerDelegate> _delegates;
+  final Map<Object, WorkerDelegate> _delegates = <Object, WorkerDelegate>{};
 
   @override
   Future<bool> importScripts(List<String> scripts) {
