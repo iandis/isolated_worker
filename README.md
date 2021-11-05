@@ -77,7 +77,72 @@ void main() async {
     }
 }
 ```
+## Shared Platform Worker
+There might be a case where we need to use both `IsolatedWorker` and `JsIsolatedWorker`. There are many ways to go about it. We can use conditional import, dependency injections, or `WorkerDelegator`.
+### WorkerDelegator
+For example, we have a `foo` Dart method that returns a list of numbers from 1 to **count**.
+```dart
+List<int> foo(int count) {
+    List<int> result = <int>[];
+    for(int i = 1; i <= count; i++) {
+        result.add(i);
+    }
+    return result;
+}
+```
+And a JS file `foo.js` containing a `foo` JS method that does the same thing.
+```js
+function foo(count) {
+    let result = [];
+    for(let i = 1; i <= count; i++) {
+        result.push(i);
+    }
+    return result;
+}
+```
+To call these methods using `WorkerDelegator`, we need to create a `DefaultDelegate`, `JsDelegate`, and `WorkerDelegate` first. Then register the `WorkerDelegate` to our `WorkerDelegator`.
+```dart
+Future<void> main() async {
+    const DefaultDelegate<int, List<int>> fooDelegate = 
+        DefaultDelegate(callback: foo);
+    
+    const JsDelegate fooJsDelegate = JsDelegate(callback: 'foo');
 
+    const WorkerDelegate<int, List<int>> workerDelegate = 
+        WorkerDelegate(
+            key: 'foo',
+            defaultDelegate: fooDelegate,
+            jsDelegate: fooJsDelegate,
+        );
+    
+    WorkerDelegator().addDelegate(workerDelegate);
+
+    // Don't forget to call importScripts for our "foo" js method.
+    await WorkerDelegator().importScripts(const <String>['foo.js']);
+}
+```
+After registering our `WorkerDelegate`, we just need to call it using its `key` "foo".
+```dart
+...
+print(await WorkerDelegator().run('foo', 9));
+...
+```
+The `key` can be anything except `null`.
+```dart
+enum DelegateKeys { foo, bar }
+const WorkerDelegate<int, List<int>> workerDelegate = 
+    WorkerDelegate(
+        key: DelegateKeys.foo,
+        defaultDelegate: fooDelegate,
+        jsDelegate: fooJsDelegate,
+    );
+```
+Notes: `WorkerDelegator()` is a singleton. If we need to create a new instance, we can create one using 
+```dart
+WorkerDelegator.asNewInstance(
+    delegates: /* pass our WorkerDelegates here. OPTIONAL. */
+);
+```
 ## Web Worker Setup
 In order for `JsIsolatedWorker` to run properly on Flutter web, there needs to be a single `worker.js` file in the `web` folder. You can download it [here](https://github.com/iandis/isolated_worker/blob/master/web/worker.js) and put it in your `web` folder like below
 ```
