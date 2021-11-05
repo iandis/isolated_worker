@@ -15,6 +15,10 @@ abstract class WorkerDelegator {
   /// Returns a singleton instance of [WorkerDelegator]
   factory WorkerDelegator() => _WorkerDelegatorImpl._instance;
 
+  factory WorkerDelegator.asNewInstance({
+    Iterable<WorkerDelegate> delegates,
+  }) = _WorkerDelegatorImpl;
+
   /// Executes [JsIsolatedWorker.importScripts] when running on Web.
   ///
   /// If it's running on Dart VM, this will always return `true`.
