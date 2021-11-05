@@ -1,3 +1,7 @@
+## 0.1.0
+
+- Add `WorkerDelegator`
+- Add tests for `WorkerDelegator`
 ## 0.0.1+2
 
 - Updated README with exampleS

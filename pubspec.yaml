@@ -1,6 +1,6 @@
 name: isolated_worker
 description: A singleton isolated worker for Flutter (Isolate) and Web (Web Worker).
-version: 0.0.1+2
+version: 0.1.0
 repository: https://www.github.com/iandis/isolated_worker
 issue_tracker: https://www.github.com/iandis/isolated_worker/issues
 
