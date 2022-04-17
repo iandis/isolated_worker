@@ -173,9 +173,10 @@ class IsolatedWorkerImpl implements IsolatedWorker {
   }
 
   @override
-  void close() {
+  Future<void> close() async {
     /// tell [_Worker] to call _dispose()
-    _workerSendPort.then((sendPort) => sendPort.send(false));
+    final SendPort sendPort = await _workerSendPort;
+    sendPort.send(false);
     _workerMessages.cancel();
     _receivePort.close();
     _isolate.kill();
