@@ -1,6 +1,7 @@
 import 'dart:async' show Completer, FutureOr, StreamSubscription;
 import 'dart:collection' show LinkedHashMap;
 import 'dart:isolate' show Isolate, ReceivePort, SendPort;
+import 'package:meta/meta.dart';
 
 import 'isolated_worker_default.dart';
 
@@ -81,6 +82,10 @@ class _ResultErrorMessage implements _CallbackObject {
 
 class IsolatedWorkerImpl implements IsolatedWorker {
   factory IsolatedWorkerImpl() => _instance;
+
+  @internal
+  @visibleForTesting
+  factory IsolatedWorkerImpl.create() => IsolatedWorkerImpl._();
 
   /// it's important to call [IsolatedWorkerImpl._init] first
   /// before running any operations using [IsolatedWorkerImpl.run]
