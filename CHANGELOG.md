@@ -1,3 +1,6 @@
+## 0.1.1
+
+- Fix `LateInitializationError` when calling `IsolatedWorker.close`
 ## 0.1.0
 
 - Add `WorkerDelegator`
