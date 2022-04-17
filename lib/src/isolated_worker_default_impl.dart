@@ -1,6 +1,7 @@
 import 'dart:async' show Completer, FutureOr, StreamSubscription;
 import 'dart:collection' show LinkedHashMap;
 import 'dart:isolate' show Isolate, ReceivePort, SendPort;
+import 'package:meta/meta.dart';
 
 import 'isolated_worker_default.dart';
 
@@ -81,6 +82,10 @@ class _ResultErrorMessage implements _CallbackObject {
 
 class IsolatedWorkerImpl implements IsolatedWorker {
   factory IsolatedWorkerImpl() => _instance;
+
+  @internal
+  @visibleForTesting
+  factory IsolatedWorkerImpl.create() => IsolatedWorkerImpl._();
 
   /// it's important to call [IsolatedWorkerImpl._init] first
   /// before running any operations using [IsolatedWorkerImpl.run]
@@ -173,9 +178,10 @@ class IsolatedWorkerImpl implements IsolatedWorker {
   }
 
   @override
-  void close() {
+  Future<void> close() async {
     /// tell [_Worker] to call _dispose()
-    _workerSendPort.then((sendPort) => sendPort.send(false));
+    final SendPort sendPort = await _workerSendPort;
+    sendPort.send(false);
     _workerMessages.cancel();
     _receivePort.close();
     _isolate.kill();
@@ -183,11 +189,13 @@ class IsolatedWorkerImpl implements IsolatedWorker {
 }
 
 void _workerEntryPoint(final SendPort parentSendPort) {
-  _Worker(parentSendPort).init();
+  _Worker(parentSendPort);
 }
 
 class _Worker {
-  _Worker(this.parentSendPort);
+  _Worker(this.parentSendPort) {
+    _init();
+  }
 
   /// this is used to listen messages sent by [IsolatedWorker]
   ///
@@ -199,7 +207,7 @@ class _Worker {
 
   late final StreamSubscription<dynamic> _parentMessages;
 
-  void init() {
+  void _init() {
     _parentMessages = _receivePort.listen(_parentMessageReceiver);
 
     parentSendPort.send(_receivePort.sendPort);

@@ -1,9 +1,14 @@
 import 'package:isolated_worker/isolated_worker.dart';
+import 'package:isolated_worker/src/isolated_worker_default_impl.dart';
 import 'package:isolated_worker/worker_delegator.dart';
 import 'package:test/test.dart';
 
 List<int> isolatedWork(int number) {
   return List<int>.generate(number, (index) => index + 1);
+}
+
+Future<void> delayedFunc([void noArgs]) {
+  return Future<void>.delayed(const Duration(seconds: 2));
 }
 
 void main() {
@@ -99,6 +104,19 @@ void main() {
         );
       });
     });
+
+    test(
+      'Verify closing [IsolatedWorker] immediately after calling [IsolatedWorker.run] '
+      'should not throw LateInitializationError',
+      () {
+        final IsolatedWorker isolatedWorker = IsolatedWorkerImpl.create();
+        isolatedWorker.run(delayedFunc, null);
+        expect(
+          isolatedWorker.close(),
+          completes,
+        );
+      },
+    );
   });
 
   group('Test [WorkerDelegator] on Dart VM\n', () {

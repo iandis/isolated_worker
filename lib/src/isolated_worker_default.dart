@@ -15,5 +15,5 @@ abstract class IsolatedWorker {
   );
 
   /// Don't try to [close] when the app still needs the [run] function
-  void close();
+  FutureOr<void> close();
 }
