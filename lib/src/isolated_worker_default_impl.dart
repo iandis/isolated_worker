@@ -183,11 +183,13 @@ class IsolatedWorkerImpl implements IsolatedWorker {
 }
 
 void _workerEntryPoint(final SendPort parentSendPort) {
-  _Worker(parentSendPort).init();
+  _Worker(parentSendPort);
 }
 
 class _Worker {
-  _Worker(this.parentSendPort);
+  _Worker(this.parentSendPort) {
+    _init();
+  }
 
   /// this is used to listen messages sent by [IsolatedWorker]
   ///
@@ -199,7 +201,7 @@ class _Worker {
 
   late final StreamSubscription<dynamic> _parentMessages;
 
-  void init() {
+  void _init() {
     _parentMessages = _receivePort.listen(_parentMessageReceiver);
 
     parentSendPort.send(_receivePort.sendPort);
