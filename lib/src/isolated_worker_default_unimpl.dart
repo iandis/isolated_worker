@@ -1,6 +1,6 @@
 import 'dart:async' show FutureOr;
 
-import 'isolated_worker_default.dart';
+import 'package:isolated_worker/src/isolated_worker_default.dart';
 
 class IsolatedWorkerImpl implements IsolatedWorker {
   factory IsolatedWorkerImpl() {

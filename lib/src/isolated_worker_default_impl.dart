@@ -1,9 +1,9 @@
 import 'dart:async' show Completer, FutureOr, StreamSubscription;
 import 'dart:collection' show LinkedHashMap;
 import 'dart:isolate' show Isolate, ReceivePort, SendPort;
-import 'package:meta/meta.dart';
 
-import 'isolated_worker_default.dart';
+import 'package:isolated_worker/src/isolated_worker_default.dart';
+import 'package:meta/meta.dart';
 
 const int _kMaxCallbackMessageId = 1000;
 
@@ -188,7 +188,7 @@ class IsolatedWorkerImpl implements IsolatedWorker {
   }
 }
 
-void _workerEntryPoint(final SendPort parentSendPort) {
+void _workerEntryPoint( SendPort parentSendPort) {
   _Worker(parentSendPort);
 }
 
@@ -222,7 +222,7 @@ class _Worker {
   }
 
   Future<void> _runCallback(
-    final _CallbackMessage parentMessage,
+     _CallbackMessage parentMessage,
   ) async {
     try {
       final dynamic result =

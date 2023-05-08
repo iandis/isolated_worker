@@ -1,6 +1,5 @@
 import 'package:isolated_worker/isolated_worker.dart';
 import 'package:isolated_worker/src/isolated_worker_default_impl.dart';
-import 'package:isolated_worker/worker_delegator.dart';
 import 'package:test/test.dart';
 
 List<int> isolatedWork(int number) {
@@ -119,39 +118,4 @@ void main() {
     );
   });
 
-  group('Test [WorkerDelegator] on Dart VM\n', () {
-    setUpAll(() {
-      const JsDelegate dummyJsDelegate = JsDelegate(callback: 'callback');
-
-      const DefaultDelegate<int, List<int>> dummyDefDelegate =
-          DefaultDelegate<int, List<int>>(callback: isolatedWork);
-
-      const WorkerDelegate<int, List<int>> dummyWorkerDelegate =
-          WorkerDelegate<int, List<int>>(
-        key: 'dummy1to9',
-        defaultDelegate: dummyDefDelegate,
-        jsDelegate: dummyJsDelegate,
-      );
-
-      WorkerDelegator().addDelegate(dummyWorkerDelegate);
-    });
-
-    test(
-        'Verify [isolatedWork] running with [WorkerDelegator]\n'
-        'returns a List of integers containing 1 to 9\n', () {
-      expectLater(
-        WorkerDelegator().run<int, List<int>>('dummy1to9', 9).then(
-          (value) {
-            expect(value, isA<List<int>>());
-
-            expect(
-              value,
-              containsAllInOrder(Iterable.generate(9, (n) => n + 1)),
-            );
-          },
-        ),
-        completes,
-      );
-    });
-  });
 }

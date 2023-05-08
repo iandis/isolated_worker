@@ -1,6 +1,6 @@
-import '../flutter_constants.dart';
-import 'default_delegate.dart';
-import 'js_delegate.dart';
+import 'package:isolated_worker/src/flutter_constants.dart';
+import 'package:isolated_worker/src/worker_delegator/default_delegate.dart';
+import 'package:isolated_worker/src/worker_delegator/js_delegate.dart';
 
 /// A worker delegate for both Dart's Isolate and Web Worker.
 abstract class WorkerDelegate<Q, R> {

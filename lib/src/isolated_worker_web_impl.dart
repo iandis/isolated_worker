@@ -2,7 +2,7 @@ import 'dart:async' show Completer, StreamSubscription;
 import 'dart:collection' show LinkedHashMap;
 import 'dart:html';
 
-import 'isolated_worker_web.dart';
+import 'package:isolated_worker/src/isolated_worker_web.dart';
 
 const int _kMaxCallbackMessageId = 1000;
 
