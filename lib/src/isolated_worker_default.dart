@@ -1,6 +1,6 @@
 import 'dart:async' show FutureOr;
 
-import 'isolated_worker_default_impl.dart'
+import 'package:isolated_worker/src/isolated_worker_default_impl.dart'
     if (dart.library.html) 'isolated_worker_default_unimpl.dart';
 
 /// An isolated worker spawning a single Isolate.

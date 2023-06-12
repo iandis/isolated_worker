@@ -1,4 +1,4 @@
-import 'isolated_worker_web_impl.dart'
+import 'package:isolated_worker/src/isolated_worker_web_impl.dart'
     if (dart.library.io) 'isolated_worker_web_unimpl.dart';
 
 /// An isolated worker spawning a single Web Worker

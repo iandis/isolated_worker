@@ -1,7 +1,7 @@
-import '../flutter_constants.dart';
-import '../isolated_worker_default.dart';
-import '../isolated_worker_web.dart';
-import 'worker_delegate.dart';
+import 'package:isolated_worker/src/flutter_constants.dart';
+import 'package:isolated_worker/src/isolated_worker_default.dart';
+import 'package:isolated_worker/src/isolated_worker_web.dart';
+import 'package:isolated_worker/src/worker_delegator/worker_delegate.dart';
 
 part 'worker_delegator_impl.dart';
 

@@ -1,4 +1,4 @@
-import 'isolated_worker_web.dart';
+import 'package:isolated_worker/src/isolated_worker_web.dart';
 
 class JsIsolatedWorkerImpl implements JsIsolatedWorker {
   factory JsIsolatedWorkerImpl() {
