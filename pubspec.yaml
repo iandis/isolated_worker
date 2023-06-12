@@ -1,15 +1,14 @@
 name: isolated_worker
 description: A singleton isolated worker for Flutter (Isolate) and Web (Web Worker).
 version: 0.1.1
-repository: https://www.github.com/iandis/isolated_worker
-issue_tracker: https://www.github.com/iandis/isolated_worker/issues
+repository: https://www.github.com/kabirnayeem99/isolated_worker
+issue_tracker: https://www.github.com/kabirnayeem99/isolated_worker/issues
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  meta: ^1.8.0
+  meta: ^1.9.1
 
 dev_dependencies:
   lint: ^2.0.1
-  test: ^1.24.2

@@ -1,7 +1,9 @@
+import 'dart:developer' as dev;
+
 import 'package:isolated_worker/isolated_worker.dart';
 
 void tryPrint(void _) {
-  print('Hello from IsolatedWorker');
+  dev.log('Hello from IsolatedWorker');
 }
 
 void main() {
