@@ -5,7 +5,7 @@ repository: https://www.github.com/iandis/isolated_worker
 issue_tracker: https://www.github.com/iandis/isolated_worker/issues
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   meta: ^1.7.0
