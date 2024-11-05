@@ -7,6 +7,7 @@ class _WorkerDelegatorImpl implements WorkerDelegator {
     addAllDelegates(delegates);
   }
 
+  final IsolatedWorker _isolatedWorker = IsolatedWorker.create();
   static final _WorkerDelegatorImpl _instance = _WorkerDelegatorImpl();
 
   final Map<Object, WorkerDelegate> _delegates = <Object, WorkerDelegate>{};
@@ -60,7 +61,7 @@ class _WorkerDelegatorImpl implements WorkerDelegator {
       ) as R;
     }
 
-    return IsolatedWorker().run<Q, R>(
+    return _isolatedWorker.run<Q, R>(
       delegate.defaultDelegate.callback,
       message as Q,
     );
@@ -72,6 +73,6 @@ class _WorkerDelegatorImpl implements WorkerDelegator {
       JsIsolatedWorker().close();
       return;
     }
-    IsolatedWorker().close();
+    _isolatedWorker.close();
   }
 }
